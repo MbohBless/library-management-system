@@ -83,14 +83,31 @@ class BookController {
     }
 
     public async searchBooks(query: string): Promise<Book[]> {
-        const books = await collections?.books?.find(
+        // const books = await collections?.books?.find(
+        //     {
+        //         $or: [
+        //             {title: {$regex: new RegExp(query, 'i')}},
+        //             {'authors.name': {$regex: new RegExp(query, 'i')}},
+        //         ]
+        //     }).limit(25).toArray();
+        // return books;
+        console.log("Starting")
+        const vector = await getEmbeddings(query);
+        console.log(vector)
+        const aggregationPipeline = [
             {
-                $or: [
-                    {title: {$regex: new RegExp(query, 'i')}},
-                    {'authors.name': {$regex: new RegExp(query, 'i')}},
-                ]
-            }).limit(25).toArray();
+                $vectorSearch: {
+                    queryVector: vector,
+                    path: 'embeddings',
+                    numCandidates: 100,
+                    index: 'vector_index',
+                    limit: 5,
+                }
+            }
+        ];
+        const books = await collections?.books?.aggregate(aggregationPipeline).toArray() as Book[];
         return books;
+
     }
 
     public async createBook(book: Book): Promise<InsertOneResult> {
