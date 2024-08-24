@@ -93,14 +93,7 @@ class BookController {
                 index: 'books_index',
                 limit: 5
             }
-        }]
-        // const books = await collections?.books?.find(
-        //     {
-        //         $or: [
-        //             {title: {$regex: new RegExp(query, 'i')}},
-        //             {'authors.name': {$regex: new RegExp(query, 'i')}},
-        //         ]
-        //     }).limit(25).toArray();
+        }];
         const books = await collections?.books?.aggregate(aggregationPipeline).toArray() as Book[];
         return books;
     }
